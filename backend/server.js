@@ -9,7 +9,16 @@ import htmlToDocx from "html-to-docx";
 import { spawn } from "child_process";
 
 const app = express();
+
+// Request logging for production debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const UPLOAD_DIR = path.resolve("./uploads");
 const OUTPUT_DIR = path.resolve("./output");
@@ -173,6 +182,12 @@ app.post("/dossier/generate", upload.array("files"), async (req, res) => {
     cleanupFiles(files);
     return res.status(500).json({ error: err.message || "Failed to generate dossier" });
   }
+});
+
+// Catch-all 404 handler to debug unmatched routes
+app.use((req, res) => {
+  console.warn(`[404] Unmatched Route: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ error: "Route not found" });
 });
 
 const port = process.env.PORT || 3000;

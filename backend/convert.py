@@ -10,7 +10,10 @@ def convert_pdf_to_docx(input_path: Path, output_path: Path):
     cv.close()
 
 def convert_ppt_to_pdf(input_path: Path, output_path: Path):
-    import win32com.client
+    try:
+        import win32com.client
+    except ImportError:
+        raise RuntimeError("PowerPoint conversion requires Windows and MS Office (win32com). Not supported on this server.")
     print(f"Converting PowerPoint to PDF: {input_path.name} -> {output_path.name}")
     abs_input = str(input_path.resolve())
     abs_output = str(output_path.resolve())

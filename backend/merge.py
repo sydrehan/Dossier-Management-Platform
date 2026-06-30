@@ -44,7 +44,10 @@ def convert_pdf_to_docx(input_path: Path) -> Path:
     return temp_docx_path
 
 def convert_ppt_to_docx(input_path: Path, temp_files: list) -> Path:
-    import win32com.client
+    try:
+        import win32com.client
+    except ImportError:
+        raise RuntimeError("PowerPoint conversion requires Windows and MS Office (win32com). Not supported on this server.")
     temp_pdf_path = input_path.with_suffix(".temp.pdf")
     temp_docx_path = input_path.with_suffix(".temp.docx")
     

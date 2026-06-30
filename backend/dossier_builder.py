@@ -9,7 +9,11 @@ from docx import Document
 from docx.shared import Pt, RGBColor
 from docxcompose.composer import Composer
 from pdf2docx import Converter
-import win32com.client
+try:
+    import win32com.client
+    WIN32_AVAILABLE = True
+except ImportError:
+    WIN32_AVAILABLE = False
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +225,9 @@ def remove_duplicate_page_breaks(docx_path):
 # Optional: update TOC/fields via Word COM — best effort, never blocks
 # ---------------------------------------------------------------------------
 def try_update_toc(docx_path):
+    if not WIN32_AVAILABLE:
+        print("WARNING: win32com not available on this OS. TOC update skipped.")
+        return
     abs_path = str(Path(docx_path).resolve())
     doc_name = Path(docx_path).name
     lock_path = str(Path(docx_path).parent / ("~$" + doc_name))
