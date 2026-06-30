@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API } from "./config/api";
 
 function getUniqueFilename(prefix, ext) {
   return `${prefix}-${Date.now()}.${ext}`;
@@ -107,7 +108,7 @@ export default function App() {
       formData.append("metadata", JSON.stringify(submitMetadata));
       formData.append("mappings", JSON.stringify(fileToSectionMap));
 
-      const response = await fetch("http://localhost:3000/dossier/generate", {
+      const response = await fetch(API.dossierGenerate, {
         method: "POST",
         body: formData,
       });
@@ -178,7 +179,7 @@ export default function App() {
       });
       formData.append("type", mergerType);
 
-      const response = await fetch("http://localhost:3000/merge", {
+      const response = await fetch(API.merge, {
         method: "POST",
         body: formData,
       });
@@ -238,7 +239,7 @@ export default function App() {
       formData.append("file", converterFile, converterFile.name);
       formData.append("convType", convType);
 
-      const response = await fetch("http://localhost:3000/convert", {
+      const response = await fetch(API.convert, {
         method: "POST",
         body: formData,
       });
