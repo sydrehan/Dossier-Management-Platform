@@ -4,7 +4,6 @@ from copy import deepcopy
 from pathlib import Path
 from docx import Document
 from docx.oxml.ns import qn
-from docxcompose.composer import Composer
 
 def copy_body_elements(source: Document, destination: Document) -> None:
     elements = list(source.element.body)
@@ -15,13 +14,7 @@ def copy_body_elements(source: Document, destination: Document) -> None:
     for element in elements:
         destination.element.body.append(deepcopy(element))
 
-def merge_with_docxcompose(sources, output_path):
-    master = Document(sources[0])
-    composer = Composer(master)
-    for src in sources[1:]:
-        master.add_page_break()
-        composer.append(Document(src))
-    composer.save(output_path)
+
 
 def merge_manual(sources, output_path):
     merged = Document(sources[0])
@@ -154,16 +147,11 @@ def main():
             print(f"  [{idx + 1}] {src}")
 
         try:
-            merge_with_docxcompose(processed_sources, output_path)
-            print("DOCX merged successfully with docxcompose:", output_path)
+            merge_manual(processed_sources, output_path)
+            print("DOCX merged successfully with manual implementation:", output_path)
         except Exception as exc:
-            print("docxcompose failed, using manual fallback:", exc)
-            try:
-                merge_manual(processed_sources, output_path)
-                print("DOCX merged successfully with fallback:", output_path)
-            except Exception as fallback_exc:
-                print("Fallback merge also failed:", fallback_exc)
-                sys.exit(1)
+            print("Manual merge failed:", exc)
+            sys.exit(1)
 
     except Exception as process_exc:
         print(f"Error during document processing: {process_exc}", file=sys.stderr)

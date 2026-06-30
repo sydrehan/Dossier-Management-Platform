@@ -7,7 +7,6 @@ import stat
 from pathlib import Path
 from docx import Document
 from docx.shared import Pt, RGBColor
-from docxcompose.composer import Composer
 from pdf2docx import Converter
 try:
     import win32com.client
@@ -132,6 +131,21 @@ def prepare_section_document(source_doc_path, temp_path):
     doc.save(temp_path)
 
 
+def _copy_body_elements(source_doc, destination_body):
+    from copy import deepcopy
+    elements = list(source_doc.element.body)
+    # Remove section properties from the end of the source body if it exists,
+    # to avoid messing up the target document page layouts.
+    _WNS_local = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    if elements and elements[-1].tag == f"{_WNS_local}sectPr":
+        elements = elements[:-1]
+    # Also ignore sectPr without the namespace prefix if that happens
+    if elements and elements[-1].tag.endswith('sectPr'):
+        elements = elements[:-1]
+        
+    for element in elements:
+        destination_body.append(deepcopy(element))
+
 # ---------------------------------------------------------------------------
 # Inject a DOCX at a placeholder inside the master template
 # ---------------------------------------------------------------------------
@@ -155,8 +169,8 @@ def insert_document_at_placeholder(master_doc, placeholder_text, filepath_to_ins
         body.remove(final_sectPr)
 
     try:
-        composer = Composer(master_doc)
-        composer.append(Document(filepath_to_insert))
+        source_doc = Document(filepath_to_insert)
+        _copy_body_elements(source_doc, body)
     except Exception as e:
         print(f"Warning: Could not append {filepath_to_insert}: {e}")
 

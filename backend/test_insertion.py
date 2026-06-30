@@ -1,5 +1,5 @@
 import docx
-from docxcompose.composer import Composer
+from copy import deepcopy
 
 # Create master
 d_master = docx.Document()
@@ -37,12 +37,15 @@ if target_idx != -1:
     if final_sectPr is not None:
         body.remove(final_sectPr)
         
-    # Append using docxcompose
-    comp = Composer(d_master)
-    comp.append(d_insert)
-    
-    # Remove the sectPr that docxcompose might have added at the end if we want to keep it continuous
-    # Actually docxcompose adds the sectPr of the inserted doc. We can leave it or remove it.
+    # Append using manual copy
+    elements = list(d_insert.element.body)
+    _WNS_local = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    if elements and elements[-1].tag == f"{_WNS_local}sectPr":
+        elements = elements[:-1]
+    if elements and elements[-1].tag.endswith('sectPr'):
+        elements = elements[:-1]
+    for element in elements:
+        body.append(deepcopy(element))
     
     # Re-append tail elements
     for el in tail_elements:
