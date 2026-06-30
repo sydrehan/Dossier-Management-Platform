@@ -1,0 +1,12 @@
+{
+  "success": false,
+  "error": "Table of Contents is empty or has not been populated with headings.",
+  "inputFiles": {
+    "clinical_evidence": "C:\\Users\\RehanRaza\\Desktop\\KadelLabs\\document-merging-poc\\backend\\test_amcp_guideline.pdf"
+  },
+  "expectedStats": {
+    "inputPages": 64,
+    "expectedTables": 93,
+    "expectedImages": 5
+  }
+}
