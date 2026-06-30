@@ -87,36 +87,7 @@ app.post("/merge", upload.array("files"), async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// Document conversion
-// ---------------------------------------------------------------------------
-app.post("/convert", upload.single("file"), async (req, res) => {
-  const file = req.file;
-  const convType = req.body.convType || "pdf-to-docx";
-  console.log(`[/convert] File: ${file?.originalname}, Type: ${convType}`);
-  if (!file) return res.status(400).json({ error: "No file uploaded" });
 
-  const outExt = convType.endsWith("pdf") ? "pdf" : "docx";
-  const outName = `converted-${Date.now()}.${outExt}`;
-  const outPath = path.join(OUTPUT_DIR, outName);
-
-  try {
-    await new Promise((resolve, reject) => {
-      const py = spawn("python", [path.resolve("./convert.py"), convType, file.path, outPath]);
-      let stderr = "";
-      py.stderr.on("data", d => { stderr += d.toString(); });
-      py.on("close", code => code !== 0 ? reject(new Error(stderr || `Exit ${code}`)) : resolve());
-      py.on("error", reject);
-    });
-    cleanupFiles([file]);
-    return res.download(outPath, outName, () => {
-      try { if (fs.existsSync(outPath)) fs.unlinkSync(outPath); } catch (e) {}
-    });
-  } catch (err) {
-    cleanupFiles([file]);
-    return res.status(500).json({ error: err.message });
-  }
-});
 
 // ---------------------------------------------------------------------------
 // AMCP Dossier generation — always generates, always downloads

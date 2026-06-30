@@ -204,67 +204,6 @@ export default function App() {
   }
 
   // ---------------------------------------------------------
-  // Document Converter State & Configuration
-  // ---------------------------------------------------------
-  const [converterFile, setConverterFile] = useState(null);
-  const [convType, setConvType] = useState("pdf-to-docx");
-
-  function handleConverterFile(file) {
-    setErrorMsg(null);
-    if (!file) {
-      setConverterFile(null);
-      return;
-    }
-
-    const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if (ext === '.pdf') {
-      setConverterFile(file);
-      setConvType("pdf-to-docx");
-    } else if (ext === '.pptx' || ext === '.ppt') {
-      setConverterFile(file);
-      setConvType("ppt-to-pdf");
-    } else {
-      setErrorMsg("Unsupported file type for conversion. Upload a PDF or PowerPoint file.");
-    }
-  }
-
-  async function convertDocument() {
-    setLoading(true);
-    setLoadingMsg("Executing layout conversion pipelines and mapping element properties...");
-    setResult(null);
-    setErrorMsg(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", converterFile, converterFile.name);
-      formData.append("convType", convType);
-
-      const response = await fetch(API.convert, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(await getErrorMessage(response, "Conversion failed"));
-      }
-
-      const blob = await response.blob();
-      const contentDisposition = response.headers.get("content-disposition") || "";
-      const match = /filename="?([^";]+)"?/.exec(contentDisposition);
-      const outExt = convType.endsWith("pdf") ? "pdf" : "docx";
-      const filename = match ? match[1] : getUniqueFilename("converted", outExt);
-
-      setResult({ blob, filename, type: `Converted Document (${outExt.toUpperCase()})` });
-      triggerDownload(blob, filename);
-    } catch (err) {
-      console.error(err);
-      setErrorMsg(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ---------------------------------------------------------
   // Utilities
   // ---------------------------------------------------------
   async function getErrorMessage(response, defaultMsg) {
@@ -315,8 +254,6 @@ export default function App() {
       });
     } else if (activeTab === "merger") {
       setMergerFiles([]);
-    } else if (activeTab === "converter") {
-      setConverterFile(null);
     }
   }
 
@@ -358,18 +295,7 @@ export default function App() {
                 Document Merger
               </button>
             </li>
-            <li>
-              <button
-                className={`nav-item-btn ${activeTab === "converter" ? "active" : ""}`}
-                onClick={() => {
-                  setActiveTab("converter");
-                  resetWorkspace();
-                }}
-              >
-                <span className="nav-icon">🔁</span>
-                Document Converter
-              </button>
-            </li>
+
           </ul>
         </div>
 
@@ -822,121 +748,7 @@ export default function App() {
               </div>
             )}
 
-            {activeTab === "converter" && (
-              <div className="merger-center-layout">
-                <div className="workspace-header">
-                  <h1>Enterprise Document Converter</h1>
-                  <p>Seamlessly convert individual files to industry-standard publication formats.</p>
-                </div>
 
-                <div className="converter-row-panel">
-                  {/* File Upload zone */}
-                  <div className="dmp-panel-card">
-                    <div className="panel-section-title">
-                      <h3>Select Document</h3>
-                      <p>Drag and drop a PDF or PowerPoint file to convert.</p>
-                    </div>
-
-                    {converterFile ? (
-                      <div className="file-list-row" style={{ marginTop: "12px" }}>
-                        <div className="file-row-details">
-                          <span className={`file-badge-type ${converterFile.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'generic'}`}>
-                            {converterFile.name.split('.').pop()}
-                          </span>
-                          <span className="file-name-txt" title={converterFile.name}>
-                            {converterFile.name}
-                          </span>
-                        </div>
-                        <div className="file-row-actions">
-                          <span className="file-size-lbl">{formatBytes(converterFile.size)}</span>
-                          <button className="btn-file-row-clear" onClick={() => handleConverterFile(null)}>
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="converter-dropzone-box"
-                        onDragEnter={(e) => {
-                          e.preventDefault();
-                          setIsDragOverDropzone(true);
-                        }}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                        }}
-                        onDragLeave={() => setIsDragOverDropzone(false)}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          setIsDragOverDropzone(false);
-                          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                            handleConverterFile(e.dataTransfer.files[0]);
-                          }
-                        }}
-                        onClick={() => document.getElementById("converter-file-input").click()}
-                      >
-                        <input
-                          id="converter-file-input"
-                          type="file"
-                          accept=".pdf,.pptx,.ppt"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              handleConverterFile(e.target.files[0]);
-                            }
-                          }}
-                          style={{ display: "none" }}
-                        />
-                        <div className="converter-dropzone-icon">📂</div>
-                        <div className="converter-dropzone-text">
-                          <h4>Drag & drop file here or browse</h4>
-                          <p>Supports PDF, PPT, PPTX formats</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {errorMsg && <div className="dmp-error-banner" style={{ marginTop: "12px" }}>⚠ {errorMsg}</div>}
-                  </div>
-
-                  {/* Settings / Convert Trigger */}
-                  <div className="dmp-panel-card">
-                    <div className="panel-section-title">
-                      <h3>Conversion Pipeline</h3>
-                      <p>Select the target translation module</p>
-                    </div>
-
-                    <div className="dmp-form-group">
-                      <label className="dmp-lbl">Conversion Scheme</label>
-                      <select
-                        className="select-dropdown-style"
-                        value={convType}
-                        onChange={(e) => setConvType(e.target.value)}
-                        disabled={!converterFile}
-                      >
-                        {!converterFile ? (
-                          <option value="none">Upload a file first...</option>
-                        ) : converterFile.name.toLowerCase().endsWith(".pdf") ? (
-                          <option value="pdf-to-docx">PDF to Microsoft Word (.docx)</option>
-                        ) : (
-                          <>
-                            <option value="ppt-to-pdf">PowerPoint to PDF (.pdf)</option>
-                            <option value="ppt-to-docx">PowerPoint to Microsoft Word (.docx)</option>
-                          </>
-                        )}
-                      </select>
-                    </div>
-
-                    <div style={{ marginTop: "auto", paddingTop: "20px" }}>
-                      <button
-                        className="btn-saas-primary"
-                        onClick={convertDocument}
-                        disabled={!converterFile}
-                      >
-                        ⚡ Convert Uploaded File
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </>
         )}
       </main>

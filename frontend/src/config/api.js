@@ -6,5 +6,4 @@ const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").repla
 export const API = {
   dossierGenerate: `${BASE_URL}/dossier/generate`,
   merge: `${BASE_URL}/merge`,
-  convert: `${BASE_URL}/convert`,
 };
