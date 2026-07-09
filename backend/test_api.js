@@ -17,7 +17,7 @@ const config = {
   },
   dossierType: "format-b",
   sections: {
-    clinical_evidence: localPdf
+    clinical: localPdf
   }
 };
 
