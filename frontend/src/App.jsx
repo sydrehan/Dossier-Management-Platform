@@ -5,6 +5,113 @@ function getUniqueFilename(prefix, ext) {
   return `${prefix}-${Date.now()}.${ext}`;
 }
 
+// Premium Enterprise SVG Icons
+function BookOpenIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  );
+}
+
+function LayersIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+    </svg>
+  );
+}
+
+function UploadCloudIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+    </svg>
+  );
+}
+
+function ChevronUpIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <polyline points="18 15 12 9 6 15" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function DragHandleIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="9" cy="5" r="1" />
+      <circle cx="9" cy="19" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <circle cx="15" cy="5" r="1" />
+      <circle cx="15" cy="19" r="1" />
+    </svg>
+  );
+}
+
+function FlashIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
+
+function WarningIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0 }}>
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("builder"); // "builder" | "merger" | "converter"
   const [loading, setLoading] = useState(false);
@@ -279,7 +386,7 @@ export default function App() {
                   resetWorkspace();
                 }}
               >
-                <span className="nav-icon">📖</span>
+                <span className="nav-icon"><BookOpenIcon /></span>
                 Dossier Builder
               </button>
             </li>
@@ -291,7 +398,7 @@ export default function App() {
                   resetWorkspace();
                 }}
               >
-                <span className="nav-icon">🥞</span>
+                <span className="nav-icon"><LayersIcon /></span>
                 Document Merger
               </button>
             </li>
@@ -319,7 +426,7 @@ export default function App() {
         ) : result ? (
           /* Process completed Success Panel */
           <div className="workspace-success-panel">
-            <div className="success-icon-badge">🎉</div>
+            <div className="success-icon-badge"><CheckCircleIcon /></div>
             <h2 className="success-main-title">Operation Successful!</h2>
             <p className="success-sub-desc">
               Your document has been compiled and formatted to meet enterprise layout specifications.
@@ -343,7 +450,7 @@ export default function App() {
 
             <div className="success-control-buttons">
               <button className="btn-success-action" onClick={() => triggerDownload(result.blob, result.filename)}>
-                📥 Download Converted Document
+                <DownloadIcon /> Download Converted Document
               </button>
               <button className="btn-reset-light-style" onClick={resetWorkspace}>
                 Process Another File
@@ -478,16 +585,16 @@ export default function App() {
 
                       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                         <div className={`check-row-lbl ${metadataValid ? "valid" : ""}`}>
-                          <span className="check-chk-box">{metadataValid ? "✓" : ""}</span>
+                          <span className="check-chk-box">{metadataValid ? <CheckIcon /> : ""}</span>
                           <span>Cover Metadata Valid</span>
                         </div>
                         <div className={`check-row-lbl ${activeUploadedCount > 0 ? "valid" : ""}`}>
-                          <span className="check-chk-box">{activeUploadedCount > 0 ? "✓" : ""}</span>
+                          <span className="check-chk-box">{activeUploadedCount > 0 ? <CheckIcon /> : ""}</span>
                           <span>At Least One Section Mapped</span>
                         </div>
                       </div>
 
-                      {errorMsg && <div className="dmp-error-banner">⚠ {errorMsg}</div>}
+                      {errorMsg && <div className="dmp-error-banner"><WarningIcon /> {errorMsg}</div>}
 
                       {activeUploadedCount > 0 && (
                         <button className="btn-reset-light-style" onClick={resetWorkspace}>
@@ -551,7 +658,7 @@ export default function App() {
                                   className="btn-file-row-clear"
                                   onClick={() => handleSectionFile(sec.key, null)}
                                 >
-                                  ✕
+                                  <XIcon />
                                 </button>
                               </div>
                             </div>
@@ -569,7 +676,7 @@ export default function App() {
                                 style={{ display: "none" }}
                               />
                               <label htmlFor={`file-input-${sec.key}`} className="dropzone-saas-lbl">
-                                <span className="up-ico">📤</span>
+                                <span className="up-ico"><UploadCloudIcon /></span>
                                 <span className="dropzone-saas-txt">
                                   Drag file here or <span className="hl-browse">browse</span>
                                 </span>
@@ -586,7 +693,7 @@ export default function App() {
                         disabled={!metadataValid || activeUploadedCount === 0}
                         onClick={generateDossier}
                       >
-                        ⚡ Compile AMCP 5.0 Submission Dossier
+                        <FlashIcon /> Compile AMCP 5.0 Submission Dossier
                       </button>
                     </div>
                   </main>
@@ -639,7 +746,7 @@ export default function App() {
                       }}
                       style={{ display: "none" }}
                     />
-                    <div className="converter-dropzone-icon">📤</div>
+                    <div className="converter-dropzone-icon"><UploadCloudIcon /></div>
                     <div className="converter-dropzone-text">
                       <h4>Drag and drop multiple documents here</h4>
                       <p>Supports PDF, DOCX, PPT, PPTX formats</p>
@@ -655,7 +762,7 @@ export default function App() {
                         return (
                           <div key={index} className="merger-item-row">
                             <div className="merger-item-details">
-                              <span className="drag-handle-icon">☰</span>
+                              <span className="drag-handle-icon"><DragHandleIcon /></span>
                               <span className={`file-badge-type ${extClass}`}>{ext.replace('.', '')}</span>
                               <span className="merger-item-name" title={file.name}>{file.name}</span>
                             </div>
@@ -674,7 +781,7 @@ export default function App() {
                                   title="Move Up"
                                   style={{ fontSize: "0.7rem", opacity: index === 0 ? 0.3 : 1 }}
                                 >
-                                  ▲
+                                  <ChevronUpIcon />
                                 </button>
                                 <button
                                   className="btn-file-row-clear"
@@ -686,7 +793,7 @@ export default function App() {
                                   title="Move Down"
                                   style={{ fontSize: "0.7rem", opacity: index === mergerFiles.length - 1 ? 0.3 : 1 }}
                                 >
-                                  ▼
+                                  <ChevronDownIcon />
                                 </button>
                               </div>
 
@@ -700,7 +807,7 @@ export default function App() {
                                 }}
                                 title="Remove File"
                               >
-                                ✕
+                                <XIcon />
                               </button>
                             </div>
                           </div>
@@ -709,7 +816,7 @@ export default function App() {
                     </div>
                   )}
 
-                  {errorMsg && <div className="dmp-error-banner">⚠ {errorMsg}</div>}
+                  {errorMsg && <div className="dmp-error-banner"><WarningIcon /> {errorMsg}</div>}
                 </div>
 
                 {mergerFiles.length > 0 && (
@@ -740,7 +847,7 @@ export default function App() {
                         onClick={mergeDocuments}
                         disabled={mergerFiles.length < 2}
                       >
-                        ⚡ Compile and Merge {mergerFiles.length} Documents
+                        <FlashIcon /> Compile and Merge {mergerFiles.length} Documents
                       </button>
                     </div>
                   </div>

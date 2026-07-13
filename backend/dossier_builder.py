@@ -12,6 +12,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import fitz  # PyMuPDF
+import template_components
 
 # Helper: Clean XML incompatible characters to prevent ValueError in lxml
 def clean_xml_compatible_text(text):
@@ -27,70 +28,7 @@ def clean_xml_compatible_text(text):
             cleaned.append(char)
     return "".join(cleaned)
 
-# Shading helper
-def set_cell_shd_color(cell, color_hex):
-    tcPr = cell._tc.get_or_add_tcPr()
-    shd = OxmlElement('w:shd')
-    shd.set(qn('w:val'), 'clear')
-    shd.set(qn('w:color'), 'auto')
-    shd.set(qn('w:fill'), color_hex)
-    tcPr.append(shd)
-
-# Padding helper (dxa)
-def set_cell_paddings(cell, top=60, bottom=60, left=100, right=100):
-    tcPr = cell._tc.get_or_add_tcPr()
-    tcMar = OxmlElement('w:tcMar')
-    for margin, val in [('top', top), ('bottom', bottom), ('left', left), ('right', right)]:
-        m_el = OxmlElement(f'w:{margin}')
-        m_el.set(qn('w:w'), str(val))
-        m_el.set(qn('w:type'), 'dxa')
-        tcMar.append(m_el)
-    tcPr.append(tcMar)
-
-# Border helper (thin horizontal borders)
-def set_cell_horizontal_borders_only(cell, color_hex='878A8F'):
-    tcPr = cell._tc.get_or_add_tcPr()
-    tcBorders = OxmlElement('w:tcBorders')
-    
-    for b_name in ['top', 'bottom']:
-        b = OxmlElement(f'w:{b_name}')
-        b.set(qn('w:val'), 'single')
-        b.set(qn('w:sz'), '4') # 0.5 pt
-        b.set(qn('w:space'), '0')
-        b.set(qn('w:color'), color_hex)
-        tcBorders.append(b)
-        
-    for b_name in ['left', 'right']:
-        b = OxmlElement(f'w:{b_name}')
-        b.set(qn('w:val'), 'none')
-        tcBorders.append(b)
-        
-    tcPr.append(tcBorders)
-
-# Width helper
-def set_cell_width_in_inches(cell, width_in):
-    cell.width = Inches(width_in)
-    tcPr = cell._tc.get_or_add_tcPr()
-    tcW = OxmlElement('w:tcW')
-    tcW.set(qn('w:w'), str(int(width_in * 1440)))
-    tcW.set(qn('w:type'), 'dxa')
-    tcPr.append(tcW)
-
-# Row formatting helpers
-def make_row_cant_split(row):
-    trPr = row._tr.get_or_add_trPr()
-    trPr.append(OxmlElement('w:cantSplit'))
-
-def make_row_tbl_header(row):
-    trPr = row._tr.get_or_add_trPr()
-    trPr.append(OxmlElement('w:tblHeader'))
-
-def clear_tbl_borders(table):
-    tblPr = table._tbl.tblPr
-    # Find tblBorders in tblPr child elements
-    for child in tblPr:
-        if child.tag.endswith('tblBorders'):
-            tblPr.remove(child)
+# Layout and styling helper functions have been moved to template_components.py to centralize presentation details.
 
 def convert_pdf_to_docx(pdf_path, docx_path):
     print(f"Converting PDF {pdf_path} to DOCX...")
@@ -438,16 +376,7 @@ def render_content_blocks(doc, placeholder_paragraph, blocks):
                 
             p = doc.add_paragraph()
             heading_lvl = b.get('heading_level', 0)
-            if heading_lvl > 0:
-                p.style = doc.styles[f'Heading {heading_lvl}']
-                p.paragraph_format.keep_with_next = True
-                p.paragraph_format.space_before = Pt(12)
-                p.paragraph_format.space_after = Pt(6)
-            else:
-                p.style = doc.styles['Normal']
-                p.paragraph_format.line_spacing = 1.15
-                p.paragraph_format.space_before = Pt(0)
-                p.paragraph_format.space_after = Pt(6)
+            template_components.format_paragraph_styling(p, heading_lvl)
                 
             for r_data in b.get('runs', []):
                 r = p.add_run(clean_xml_compatible_text(r_data['text']))
@@ -466,39 +395,30 @@ def render_content_blocks(doc, placeholder_paragraph, blocks):
             
             table = doc.add_table(row_count, col_count)
             table.alignment = WD_TABLE_ALIGNMENT.CENTER
-            clear_tbl_borders(table)
+            template_components.clear_table_borders(table)
             
             for r_idx, row_cells in enumerate(rows_data):
                 row = table.rows[r_idx]
-                make_row_cant_split(row)
+                template_components.make_row_cant_split(row)
                 if r_idx == 0:
-                    make_row_tbl_header(row)
+                    template_components.make_row_tbl_header(row)
                     
                 for c_idx, cell_value in enumerate(row_cells):
                     cell = row.cells[c_idx]
-                    cell.text = clean_xml_compatible_text(str(cell_value))
                     
-                    # Columns width distributed equally within printable bounds (Inches(3.5))
-                    set_cell_width_in_inches(cell, 3.5 / col_count)
-                    set_cell_horizontal_borders_only(cell, '878A8F')
-                    set_cell_paddings(cell, top=60, bottom=60, left=100, right=100)
-                    
-                    for paragraph in cell.paragraphs:
-                        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                        for run in paragraph.runs:
-                            if r_idx == 0:
-                                set_cell_shd_color(cell, '14377D')
-                                run.font.name = 'Asap'
-                                run.font.bold = True
-                                run.font.size = Pt(8.5)
-                                run.font.color.rgb = RGBColor(255, 255, 255)
-                            else:
-                                shading = 'F3F4F6' if r_idx % 2 == 1 else 'FFFFFF'
-                                if shading != 'FFFFFF':
-                                    set_cell_shd_color(cell, shading)
-                                run.font.name = 'Lora'
-                                run.font.size = Pt(8.5)
-                                run.font.color.rgb = RGBColor(0, 0, 0)
+                    # Compute shading color for alternating rows
+                    shading_color = None
+                    if r_idx > 0:
+                        shading_color = 'F3F4F6' if r_idx % 2 == 1 else 'FFFFFF'
+                        
+                    # Delegate styling to template_components cell formatter
+                    template_components.format_table_cell(
+                        cell=cell,
+                        text=clean_xml_compatible_text(str(cell_value)),
+                        is_header=(r_idx == 0),
+                        width_in=3.5 / col_count,
+                        shading_color=shading_color
+                    )
                                 
             body_element.insert(body_element.index(p_element), table._element)
             
@@ -507,6 +427,7 @@ def render_content_blocks(doc, placeholder_paragraph, blocks):
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p.paragraph_format.space_before = Pt(8)
             p.paragraph_format.space_after = Pt(4)
+            p.paragraph_format.keep_with_next = True # Anchor figure with caption
             
             run = p.add_run()
             try:
@@ -517,14 +438,7 @@ def render_content_blocks(doc, placeholder_paragraph, blocks):
             body_element.insert(body_element.index(p_element), p._element)
             
             p_cap = doc.add_paragraph()
-            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p_cap.paragraph_format.space_before = Pt(4)
-            p_cap.paragraph_format.space_after = Pt(12)
-            r_cap = p_cap.add_run(clean_xml_compatible_text(f"Figure: {b['caption']}"))
-            r_cap.font.name = 'Asap'
-            r_cap.font.size = Pt(8.5)
-            r_cap.font.bold = True
-            r_cap.font.color.rgb = RGBColor(0x47, 0x4C, 0x55)
+            template_components.format_figure_caption(p_cap, clean_xml_compatible_text(f"Figure: {b['caption']}"))
             
             body_element.insert(body_element.index(p_element), p_cap._element)
 

@@ -7,9 +7,15 @@ import PDFMerger from "pdf-merger-js";
 import mammoth from "mammoth";
 import htmlToDocx from "html-to-docx";
 import { spawn } from "child_process";
+import { fileURLToPath } from "url";
 
 // hello
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, "build")));
 
 // Request logging for production debugging
 app.use((req, res, next) => {
@@ -35,11 +41,17 @@ const upload = multer({ storage });
 
 function cleanupFiles(files) {
   for (const f of files) {
-    try { if (fs.existsSync(f.path)) fs.unlinkSync(f.path); } catch (e) {}
+    try {
+      if (fs.existsSync(f.path)) fs.unlinkSync(f.path);
+    } catch (e) {}
   }
 }
 
 app.get("/", (req, res) => res.json({ ok: true }));
+// Catch-all to route any non-API requests back to React's index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
 
 // ---------------------------------------------------------------------------
 // PDF / DOCX merge
@@ -49,7 +61,8 @@ app.post("/merge", upload.array("files"), async (req, res) => {
   const type = (req.body.type || "pdf").toLowerCase();
   console.log(`[/merge] Type: ${type}, Files: ${files.length}`);
 
-  if (!files.length) return res.status(400).json({ error: "No files uploaded" });
+  if (!files.length)
+    return res.status(400).json({ error: "No files uploaded" });
 
   const outExt = type === "pdf-docx" ? "docx" : type;
   const outName = `merged-${Date.now()}.${outExt}`;
@@ -62,22 +75,34 @@ app.post("/merge", upload.array("files"), async (req, res) => {
       await merger.save(outPath);
       cleanupFiles(files);
       return res.download(outPath, outName, () => {
-        try { if (fs.existsSync(outPath)) fs.unlinkSync(outPath); } catch (e) {}
+        try {
+          if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        } catch (e) {}
       });
     }
 
     if (type === "docx" || type === "pdf-docx") {
-      const filePaths = files.map(f => f.path);
+      const filePaths = files.map((f) => f.path);
       await new Promise((resolve, reject) => {
-        const py = spawn("python", [path.resolve("./merge.py"), outPath, ...filePaths]);
+        const py = spawn("python", [
+          path.resolve("./merge.py"),
+          outPath,
+          ...filePaths,
+        ]);
         let stderr = "";
-        py.stderr.on("data", d => { stderr += d.toString(); });
-        py.on("close", code => code !== 0 ? reject(new Error(stderr || `Exit ${code}`)) : resolve());
+        py.stderr.on("data", (d) => {
+          stderr += d.toString();
+        });
+        py.on("close", (code) =>
+          code !== 0 ? reject(new Error(stderr || `Exit ${code}`)) : resolve(),
+        );
         py.on("error", reject);
       });
       cleanupFiles(files);
       return res.download(outPath, outName, () => {
-        try { if (fs.existsSync(outPath)) fs.unlinkSync(outPath); } catch (e) {}
+        try {
+          if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        } catch (e) {}
       });
     }
 
@@ -87,8 +112,6 @@ app.post("/merge", upload.array("files"), async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
-
-
 
 // ---------------------------------------------------------------------------
 // AMCP Dossier generation — always generates, always downloads
@@ -107,14 +130,16 @@ app.post("/dossier/generate", upload.array("files"), async (req, res) => {
     const resolvedMappings = {};
     for (const [sectionKey, originalName] of Object.entries(sectionMappings)) {
       if (!originalName) continue;
-      const fileObj = files.find(f => f.originalname === originalName);
+      const fileObj = files.find((f) => f.originalname === originalName);
       if (fileObj) resolvedMappings[sectionKey] = fileObj.path;
     }
 
     const configData = {
       metadata,
       sections: resolvedMappings,
-      dossierType: metadata.dossierType ? metadata.dossierType.toLowerCase() : "format-a",
+      dossierType: metadata.dossierType
+        ? metadata.dossierType.toLowerCase()
+        : "format-a",
     };
 
     configPath = path.join(OUTPUT_DIR, `config-${Date.now()}.json`);
@@ -124,12 +149,20 @@ app.post("/dossier/generate", upload.array("files"), async (req, res) => {
     outPath = path.join(OUTPUT_DIR, outName);
 
     await new Promise((resolve, reject) => {
-      const py = spawn("python", [path.resolve("./dossier_builder.py"), configPath, outPath]);
+      const py = spawn("python", [
+        path.resolve("./dossier_builder.py"),
+        configPath,
+        outPath,
+      ]);
       let stdout = "";
       let stderr = "";
-      py.stdout.on("data", d => { stdout += d.toString(); });
-      py.stderr.on("data", d => { stderr += d.toString(); });
-      py.on("close", code => {
+      py.stdout.on("data", (d) => {
+        stdout += d.toString();
+      });
+      py.stderr.on("data", (d) => {
+        stderr += d.toString();
+      });
+      py.on("close", (code) => {
         console.log("[Python Dossier STDOUT]:\n", stdout);
         if (code !== 0) {
           console.error("[Python Dossier STDERR]:\n", stderr);
@@ -141,18 +174,25 @@ app.post("/dossier/generate", upload.array("files"), async (req, res) => {
       py.on("error", reject);
     });
 
-    try { if (fs.existsSync(configPath)) fs.unlinkSync(configPath); } catch (e) {}
+    try {
+      if (fs.existsSync(configPath)) fs.unlinkSync(configPath);
+    } catch (e) {}
     cleanupFiles(files);
 
     return res.download(outPath, outName, () => {
-      try { if (fs.existsSync(outPath)) fs.unlinkSync(outPath); } catch (e) {}
+      try {
+        if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+      } catch (e) {}
     });
-
   } catch (err) {
     console.error("[/dossier/generate] Error:", err.message || err);
-    try { if (configPath && fs.existsSync(configPath)) fs.unlinkSync(configPath); } catch (e) {}
+    try {
+      if (configPath && fs.existsSync(configPath)) fs.unlinkSync(configPath);
+    } catch (e) {}
     cleanupFiles(files);
-    return res.status(500).json({ error: err.message || "Failed to generate dossier" });
+    return res
+      .status(500)
+      .json({ error: err.message || "Failed to generate dossier" });
   }
 });
 
@@ -163,4 +203,6 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Document merging backend running on http://localhost:${port}`));
+app.listen(port, () =>
+  console.log(`Document merging backend running on http://localhost:${port}`),
+);

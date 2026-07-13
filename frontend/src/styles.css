@@ -166,6 +166,14 @@ body {
 
 .nav-item-btn .nav-icon {
   font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item-btn .nav-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* Sidebar Footer status */
@@ -426,6 +434,12 @@ body {
   width: 100%;
 }
 
+.btn-saas-primary svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .btn-saas-primary:hover:not(:disabled) {
   background-color: var(--primary-accent-hover);
   box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
@@ -437,6 +451,12 @@ body {
   color: var(--text-muted);
   box-shadow: none;
   cursor: not-allowed;
+}
+
+.check-chk-box svg {
+  width: 10px;
+  height: 10px;
+  display: block;
 }
 
 /* Dossier Grid Slots items */
@@ -534,6 +554,14 @@ body {
   font-size: 1.15rem;
   color: var(--text-muted);
   transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzone-saas-lbl .up-ico svg {
+  width: 20px;
+  height: 20px;
 }
 
 .dropzone-saas-lbl:hover .up-ico {
@@ -716,10 +744,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
   margin-bottom: 24px;
   box-shadow: 0 0 24px rgba(16, 185, 129, 0.2);
   animation: bounceSlow 2s infinite ease-in-out;
+}
+
+.success-icon-badge svg {
+  width: 28px;
+  height: 28px;
 }
 
 @keyframes bounceSlow {
@@ -815,6 +847,12 @@ body {
   gap: 8px;
 }
 
+.btn-success-action svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .btn-success-action:hover {
   background-color: #059669;
   box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
@@ -881,6 +919,14 @@ body {
   font-size: 1.1rem;
   cursor: grab;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-handle-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 .merger-item-name {
@@ -949,6 +995,21 @@ body {
 .converter-dropzone-icon {
   font-size: 2.2rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.converter-dropzone-icon svg {
+  width: 42px;
+  height: 42px;
+  color: var(--text-muted);
+  transition: transform var(--transition-smooth);
+}
+
+.converter-dropzone-box:hover .converter-dropzone-icon svg {
+  transform: translateY(-4px);
+  color: var(--primary-accent);
 }
 
 .converter-dropzone-text h4 {
@@ -992,4 +1053,15 @@ body {
   font-size: 0.82rem;
   font-weight: 500;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.dmp-error-banner svg {
+  width: 14px;
+  height: 14px;
+  color: var(--danger);
+  flex-shrink: 0;
+}
+

@@ -86,7 +86,9 @@ def apply_global_theme(doc):
     style_normal.font.size = Pt(9.0)
     style_normal.font.color.rgb = RGBColor(0, 0, 0)
     style_normal.paragraph_format.line_spacing = 1.15
-    style_normal.paragraph_format.space_after = Pt(8)
+    style_normal.paragraph_format.space_before = Pt(0)
+    style_normal.paragraph_format.space_after = Pt(6)
+    style_normal.paragraph_format.widow_control = True
     
     # Configure Heading 1
     try:
@@ -96,7 +98,9 @@ def apply_global_theme(doc):
         style_h1.font.bold = True
         style_h1.font.color.rgb = COLOR_PURPLE
         style_h1.paragraph_format.space_before = Pt(12)
-        style_h1.paragraph_format.space_after = Pt(6)
+        style_h1.paragraph_format.space_after = Pt(12)
+        style_h1.paragraph_format.keep_with_next = True
+        style_h1.paragraph_format.widow_control = True
     except KeyError:
         pass
         
@@ -109,9 +113,11 @@ def apply_global_theme(doc):
         style_h2.font.color.rgb = COLOR_JMCP_BLUE
         style_h2.paragraph_format.space_before = Pt(10)
         style_h2.paragraph_format.space_after = Pt(4)
+        style_h2.paragraph_format.keep_with_next = True
+        style_h2.paragraph_format.widow_control = True
     except KeyError:
         pass
-
+ 
     # Configure Heading 3
     try:
         style_h3 = doc.styles['Heading 3']
@@ -121,6 +127,8 @@ def apply_global_theme(doc):
         style_h3.font.color.rgb = COLOR_JMCP_BLUE
         style_h3.paragraph_format.space_before = Pt(8)
         style_h3.paragraph_format.space_after = Pt(2)
+        style_h3.paragraph_format.keep_with_next = True
+        style_h3.paragraph_format.widow_control = True
     except KeyError:
         pass
 
@@ -521,5 +529,95 @@ def create_section_heading_component(paragraph, num, text):
     plum_run.font.bold = True
     plum_run.font.color.rgb = RGBColor(108, 16, 91)  # #6C105B
     
-    paragraph.paragraph_format.space_before = Pt(12)
-    paragraph.paragraph_format.space_after = Pt(12)
+    # Removed local paragraph spacing overrides to let Heading 1 style control layout natively.
+
+# 7. Helper: Set cell horizontal borders (top, bottom) and clear vertical borders (left, right)
+def set_cell_horizontal_borders(cell, color_hex=HEX_SLATE_GRAY):
+    tcPr = cell._tc.get_or_add_tcPr()
+    tcBorders = OxmlElement('w:tcBorders')
+    
+    for b_name in ['top', 'bottom']:
+        b = OxmlElement(f'w:{b_name}')
+        b.set(qn('w:val'), 'single')
+        b.set(qn('w:sz'), '4') # 0.5 pt
+        b.set(qn('w:space'), '0')
+        b.set(qn('w:color'), color_hex)
+        tcBorders.append(b)
+        
+    for b_name in ['left', 'right']:
+        b = OxmlElement(f'w:{b_name}')
+        b.set(qn('w:val'), 'none')
+        tcBorders.append(b)
+        
+    tcPr.append(tcBorders)
+
+# 8. Helper: Prevent row splitting across pages
+def make_row_cant_split(row):
+    trPr = row._tr.get_or_add_trPr()
+    trPr.append(OxmlElement('w:cantSplit'))
+
+# 9. Helper: Repeat header row on page breaks
+def make_row_tbl_header(row):
+    trPr = row._tr.get_or_add_trPr()
+    trPr.append(OxmlElement('w:tblHeader'))
+
+# 10. Centralized Table Cell Formatter
+def format_table_cell(cell, text, is_header=False, width_in=1.0, shading_color=None):
+    cell.text = text
+    set_cell_width(cell, width_in)
+    set_cell_horizontal_borders(cell, HEX_SLATE_GRAY)
+    set_cell_margins(cell, top=60, bottom=60, left=100, right=100) # padding
+    set_cell_vertical_alignment(cell, "center") # vertical center alignment
+    
+    if shading_color:
+        set_cell_shading(cell, shading_color)
+    elif is_header:
+        set_cell_shading(cell, HEX_JMCP_BLUE)
+        
+    p = cell.paragraphs[0]
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p.paragraph_format.line_spacing = 1.15
+    p.paragraph_format.space_before = Pt(0)
+    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.widow_control = True
+    
+    for r in p.runs:
+        if is_header:
+            r.font.name = 'Asap'
+            r.font.bold = True
+            r.font.size = Pt(8.5)
+            r.font.color.rgb = RGBColor(255, 255, 255)
+        else:
+            r.font.name = 'Lora'
+            r.font.size = Pt(8.5)
+            r.font.color.rgb = RGBColor(0, 0, 0)
+
+# 11. Centralized Paragraph Formatter
+def format_paragraph_styling(p, heading_lvl=0):
+    p.paragraph_format.widow_control = True
+    if heading_lvl > 0:
+        try:
+            p.style = p.part.document.styles[f'Heading {heading_lvl}']
+        except Exception:
+            pass
+        p.paragraph_format.keep_with_next = True
+    else:
+        try:
+            p.style = p.part.document.styles['Normal']
+        except Exception:
+            pass
+
+# 12. Centralized Figure Caption Formatter
+def format_figure_caption(p, text):
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(12)
+    p.paragraph_format.widow_control = True
+    p.paragraph_format.keep_with_next = True
+    
+    p.text = ""
+    r = p.add_run(text)
+    r.font.name = 'Asap'
+    r.font.size = Pt(8.5)
+    r.font.bold = True
+    r.font.color.rgb = COLOR_CHARCOAL

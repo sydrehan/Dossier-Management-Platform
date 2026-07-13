@@ -232,9 +232,6 @@ def build_unified_master_template(dossier_type, output_path):
         plum_run.font.size = Pt(16)
         plum_run.font.bold = True
         plum_run.font.color.rgb = RGBColor(108, 16, 91)
-        p.paragraph_format.space_before = Pt(12)
-        p.paragraph_format.space_after = Pt(12)
-        p.paragraph_format.keep_with_next = True
         composer.append(doc_h)
         
         # Append Content Placeholder
