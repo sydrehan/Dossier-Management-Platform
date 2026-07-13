@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 from pathlib import Path
+import tempfile
 import docx
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor
@@ -13,6 +14,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import fitz  # PyMuPDF
 import template_components
+
 
 # Helper: Clean XML incompatible characters to prevent ValueError in lxml
 def clean_xml_compatible_text(text):
@@ -247,22 +249,38 @@ def extract_pdf_page_blocks(page, temp_dir):
             y0 = rect.y0
             
             try:
-                base_image = page.parent.extract_image(xref)
-                image_bytes = base_image["image"]
-                ext = base_image["ext"]
-                filename = f"pdf_img_{xref}_{img_idx}.{ext}"
+                # Try saving via Pixmap for decoding & PNG normalization
+                pix = fitz.Pixmap(page.parent, xref)
+                filename = f"pdf_img_{xref}_{img_idx}.png"
                 img_path = os.path.join(temp_dir, filename)
-                with open(img_path, 'wb') as img_f:
-                    img_f.write(image_bytes)
+                if pix.colorspace and (pix.colorspace.n - pix.alpha > 3):
+                    # Convert CMYK to RGB
+                    pix_rgb = fitz.Pixmap(fitz.csRGB, pix)
+                    pix_rgb.save(img_path)
+                    pix_rgb = None
+                else:
+                    pix.save(img_path)
+                pix = None
+            except Exception as pix_err:
+                print(f"Pixmap extraction failed for xref {xref}, falling back to raw: {pix_err}")
+                try:
+                    base_image = page.parent.extract_image(xref)
+                    image_bytes = base_image["image"]
+                    ext = base_image["ext"]
+                    filename = f"pdf_img_{xref}_{img_idx}.{ext}"
+                    img_path = os.path.join(temp_dir, filename)
+                    with open(img_path, 'wb') as img_f:
+                        img_f.write(image_bytes)
+                except Exception as raw_err:
+                    print(f"Error extracting PDF image xref {xref} raw: {raw_err}")
+                    continue
                     
-                blocks.append({
-                    'type': 'image',
-                    'y0': y0,
-                    'path': img_path,
-                    'caption': "Figure"
-                })
-            except Exception as e:
-                print(f"Error extracting PDF image xref {xref}: {e}")
+            blocks.append({
+                'type': 'image',
+                'y0': y0,
+                'path': img_path,
+                'caption': "Figure"
+            })
                 
     # Sort blocks page-order vertically
     blocks.sort(key=lambda b: b['y0'])
@@ -469,11 +487,8 @@ def compile_dossier(config_path, output_path):
     sections = config.get('sections', {})
     dossier_type = config.get('dossierType', 'format-a')
 
-    # Setup temporary directory for images/media extraction
-    temp_dir = Path('./temp_extract')
-    if temp_dir.exists():
-        shutil.rmtree(temp_dir)
-    temp_dir.mkdir(parents=True, exist_ok=True)
+    # Setup temporary directory for images/media extraction (unique to prevent concurrency races)
+    temp_dir = Path(tempfile.mkdtemp(prefix="amcp_temp_"))
 
     templates_dir = Path(__file__).parent / 'templates'
     
